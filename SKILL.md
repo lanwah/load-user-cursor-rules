@@ -1,102 +1,63 @@
 ---
 name: load-user-cursor-rules
 description: >-
-  为当前项目/会话手动启用 %USERPROFILE%\.cursor\rules 下的用户级 Cursor 规则：
-  开聊后读取全部 .mdc 并遵守，未读完前禁止改业务源码。
-  在用户点名 load-user-cursor-rules、说「加载用户规则」「启用用户规则」、
-  「不要每个项目单独装 load-user-cursor-rules 规则」、或要求把用户级规则
-  生效到本仓库时使用。可只对本会话生效，也可按需写入极薄项目 Rule。
+  为指定项目启用中心化用户级 Cursor 规则：仅在项目写入极薄 alwaysApply 加载器，
+  令 Agent 读取并遵守 %USERPROFILE%\.cursor\rules\*.mdc；用户规则正文只保留在该目录一份，
+  禁止复制/分发到各项目。在用户点名 load-user-cursor-rules、说「为本项目启用用户规则」、
+  「加载用户级 rules」「项目里挂上用户规则」「统一维护用户规则不要拷进仓库」时使用。
 ---
 
-# 加载用户级 Cursor 规则
+# 为项目启用中心化用户规则
 
-个人技能一次安装，任意项目可手动启用；**不必**把完整 `load-user-cursor-rules.mdc` 复制进每个仓库。
+**唯一正文**：`%USERPROFILE%\.cursor\rules\*.mdc`（Windows 即 `C:\Users\<user>\.cursor\rules`）。  
+**本 Skill 只做一件事**：给需要的项目装上「去读上述目录并遵守」的门禁，便于你只维护用户目录那一份。
 
-用户级规则目录：`%USERPROFILE%\.cursor\rules`（Windows 即 `C:\Users\<user>\.cursor\rules`）。
+```text
+%USERPROFILE%\.cursor\rules\*.mdc     ← 用户规则正文（有且仅有这里）
+         ↑ 开聊后 Read 并遵守
+<repo>/.cursor/rules/load-user-cursor-rules.mdc
+         ← 本 Skill 写入的极薄加载器（不是用户规则副本）
+```
 
 ## 如何使用（给人 / Agent）
 
 ### 1. 确保技能已被 Cursor 加载
-
-目录应在：
 
 - `%USERPROFILE%\.agents\skills\load-user-cursor-rules\`
 - 或 `%USERPROFILE%\.cursor\skills\load-user-cursor-rules\`
 
 ### 2. 对话里怎么触发
 
-**推荐显式点名**（最稳，零项目改动）：
-
 ```text
-按 load-user-cursor-rules
-加载用户规则
-为本会话启用用户级 Cursor 规则
+按 load-user-cursor-rules，为本项目启用用户规则
+给当前仓库挂上用户级 Cursor rules
+启用中心化用户规则（不要把规则拷进项目）
 ```
 
-**为本仓库长期贴身提醒**（可选，写入极薄 Rule）：
-
-```text
-按 load-user-cursor-rules，为本项目启用（写入 .cursor/rules）
-```
+指定其他路径时带上仓库根，例如：`按 load-user-cursor-rules，为 D:\Projects\Foo 启用`。
 
 ### 3. 不必使用本技能的情况
 
-- 项目里已有等价的 alwaysApply 规则，且内容与本 Skill 一致
-- 用户明确只要项目 `.cursor/rules`，不要读用户级目录
-
-## 模式选择
-
-| 用户意图 | 模式 | 是否改仓库 |
-|----------|------|------------|
-| 「加载/启用用户规则」且未提写入项目 | **A. 本会话加载** | 否 |
-| 「为本项目启用 / 写入规则 / 长期生效」 | **B. 写入极薄项目 Rule** | 是：`.cursor/rules/` |
-| 两者都提 | 先 A，再按需做 B | 视 B |
-
-未说清时默认 **A**，不要擅自改仓库。
+- 项目已有同名/等价加载器且内容一致
+- 用户只要改 `%USERPROFILE%\.cursor\rules` 里的规则正文（直接编辑该目录，与本 Skill 无关）
 
 ---
 
-## 模式 A：本会话加载（推荐）
+## Agent 强制工作流（启用项目）
 
-在本会话中，对任何**业务代码**的写入/修改之前，必须先完成：
+用户要求为本项目启用时，按序执行：
 
-1. 用 Read（或等价文件读取）读取 `%USERPROFILE%\.cursor\rules` 下**全部** `.mdc` 文件全文。
-2. 按各文件 frontmatter 遵守：
-   - `alwaysApply: true` → 本会话全程遵守
-   - 仅有 `globs` → 当编辑/涉及匹配路径时遵守
-   - 二者皆无 → 仍视为应知晓的用户级约定；有冲突时先问用户
-3. 未读完全部 `.mdc` 前：**禁止**新建或修改业务源码；仅允许列目录、读规则、澄清问题。
-
-### Do
-
-- 每个新对话开聊后尽快读取；同一会话内已读且文件未变可不再重读。
-- 用户级规则与项目 `.cursor/rules` 冲突时，先指出冲突并询问，再动手。
-- 读完后用一两句确认已加载的规则文件名（勿大段复述正文）。
-
-### Do not
-
-- 假设用户级 `.mdc` 已由系统注入而跳过 Read。
-- 只读文件名或 frontmatter 而不读正文。
-- 把用户级规则全文粘贴进项目仓库。
-
-若目录不存在或没有任何 `.mdc`：说明情况，询问是否仍继续，或是否要先创建用户级规则。
-
----
-
-## 模式 B：为本项目写入极薄 Rule（可选）
-
-仅当用户明确要求「为本项目启用 / 写入 / 长期」时执行。
-
-1. 确认目标仓库根（当前工作区，或用户指定路径）。
-2. 确保存在 `<repo>/.cursor/rules/`。
-3. 将本 Skill 的 [templates/load-user-cursor-rules.mdc](templates/load-user-cursor-rules.mdc) 复制为：
+1. **确认目标仓库根**（当前工作区或用户给出的路径）。
+2. **禁止**把 `%USERPROFILE%\.cursor\rules\` 下任何 `.mdc` 复制、粘贴或同步进项目。
+3. 确保 `<repo>/.cursor/rules/` 存在。
+4. 将本 Skill 的 [templates/load-user-cursor-rules.mdc](templates/load-user-cursor-rules.mdc) 写入：
 
    `<repo>/.cursor/rules/load-user-cursor-rules.mdc`
 
-4. 若目标已存在同名文件：先 Diff/说明差异，问是否覆盖；勿静默覆盖。
-5. 完成后说明：之后该仓库新对话会由 alwaysApply 触发同等门禁；技能目录仍是说明与模板的唯一维护处。
+5. 若目标已存在：先说明差异，问是否覆盖；勿静默覆盖。
+6. 简短确认：已写入加载器；用户规则仍只在 `%USERPROFILE%\.cursor\rules`；之后该仓开聊会要求 Agent 读取并遵守那一份。
 
-也可用脚本（在仓库根执行）：
+推荐用脚本（在目标仓库根，或传 `-ProjectRoot`）：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass `
@@ -104,14 +65,26 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -ProjectRoot .
 ```
 
----
+覆盖已有加载器时加 `-Force`。
 
-## 与「每项目安装完整规则」的边界
+## 加载器生效后 Agent 必须做什么
 
-| 方式 | 维护成本 | 何时用 |
-|------|----------|--------|
-| 本 Skill + 模式 A | 最低：只维护用户级 `.mdc` | 默认、临时、多仓库切换 |
-| 本 Skill + 模式 B 极薄 Rule | 每仓一个薄文件，逻辑不复制 | 希望该仓开聊即门禁 |
-| 每仓复制完整 `.mdc` | 高，易漂移 | **避免**；用本 Skill 替代 |
+项目里的加载器（`alwaysApply: true`）要求：改业务代码前先 Read 用户目录下**全部** `.mdc` 全文，并按 frontmatter 遵守（逻辑见模板，勿在项目里另写一份用户规则正文）。
 
-参考来源（历史项目内完整规则）：`EverythingLabeled/.cursor/rules/load-user-cursor-rules.mdc`。行为以本 Skill 与 `templates/` 为准。
+## 维护边界（强制）
+
+| 改什么 | 改哪里 |
+|--------|--------|
+| 编码约定、流程、偏好等**规则正文** | 只改 `%USERPROFILE%\.cursor\rules\*.mdc` |
+| 某仓库要不要启用中心规则 | 用本 Skill 增删项目内加载器 |
+| 加载器门禁文案本身 | 改本 Skill 的 `templates/`，再按需 `-Force` 同步到已启用项目 |
+
+### Do not
+
+- 把用户级 `.mdc` 正文分发/复制进各个 `<repo>/.cursor/rules/`
+- 在项目加载器里内联大段用户规则（应继续指向用户目录）
+- 在 `%USERPROFILE%\.cursor\rules` 再放一份本加载器（加载器只属于项目侧）
+
+## 取消启用
+
+用户要求某项目不再挂中心规则时：删除该项目的 `.cursor/rules/load-user-cursor-rules.mdc`（勿动用户目录下的规则正文）。

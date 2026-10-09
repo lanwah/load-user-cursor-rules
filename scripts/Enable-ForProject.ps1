@@ -1,7 +1,10 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Copy the thin alwaysApply rule into a project's .cursor/rules/.
+  Install the thin alwaysApply *loader* into a project's .cursor/rules/.
+
+  Does NOT copy %USERPROFILE%\.cursor\rules\*.mdc into the project.
+  User rule bodies stay only under the user profile directory.
 
 .PARAMETER ProjectRoot
   Target repository root (default: current directory).

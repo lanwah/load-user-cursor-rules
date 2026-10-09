@@ -1,9 +1,11 @@
 ---
-description: 开聊后立刻读取 %USERPROFILE%\.cursor\rules 下全部 .mdc 并遵守
+description: 开聊后立刻读取 %USERPROFILE%\.cursor\rules 下全部 .mdc 并遵守（正文只在用户目录，本文件仅为加载器）
 alwaysApply: true
 ---
 
 # Load user-level Cursor rules
+
+本文件是项目侧加载器，**不是**用户规则副本。用户规则正文仅在 `%USERPROFILE%\.cursor\rules`。
 
 在本会话中，对任何**业务代码**的写入/修改之前，必须先完成以下步骤：
 
@@ -23,3 +25,4 @@ alwaysApply: true
 
 - 假设用户级 `.mdc` 已由系统注入而跳过 Read。
 - 只读文件名或 frontmatter 而不读正文。
+- 把用户目录下的 `.mdc` 复制进本仓库。
